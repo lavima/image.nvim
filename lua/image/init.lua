@@ -16,6 +16,9 @@ local default_options = {
     syslang = {
       enabled = true,
     },
+		neonotebook = {
+			enabled = true,
+		},
   },
   max_width = nil,
   max_height = nil,
@@ -353,6 +356,13 @@ end
 api.from_url = function(url, options, callback)
   guard_setup()
   image.from_url(url, options, callback, state)
+end
+
+---@param url string
+---@param options? ImageOptions
+api.from_data = function(data, options)
+  guard_setup()
+  return image.from_data(data, options, state)
 end
 
 ---@param id? string

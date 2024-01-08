@@ -1,4 +1,4 @@
-local base64 = require("image/utils/base64")
+local base64 = require("base64")
 local logger = require("image/utils/logger")
 local magic = require("image/utils/magic")
 local math = require("image/utils/math")

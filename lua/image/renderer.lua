@@ -1,5 +1,6 @@
 local magick = require("image/magick")
 local utils = require("image/utils")
+local base64 = require("base64")
 
 -- Images get resized and cropped to fit in the context they are rendered in.
 -- Each of these versions are written to the temp directory and cleared on reboot (on Linux at least).
@@ -329,7 +330,7 @@ local render = function(image)
           resized_image:set_format("png")
           resized_image:scale(pixel_width, pixel_height)
 
-          local tmp_path = state.tmp_dir .. "/" .. utils.base64.encode(image.id) .. "-resized-" .. resize_hash .. ".png"
+          local tmp_path = state.tmp_dir .. "/" .. base64.encode(image.id) .. "-resized-" .. resize_hash .. ".png"
           resized_image:write(tmp_path)
           resized_image:destroy()
 
@@ -364,7 +365,7 @@ local render = function(image)
         cropped_image:set_format("png")
         cropped_image:crop(pixel_width, cropped_pixel_height, 0, crop_offset_top)
 
-        local tmp_path = state.tmp_dir .. "/" .. utils.base64.encode(image.id) .. "-cropped-" .. crop_hash .. ".png"
+        local tmp_path = state.tmp_dir .. "/" .. base64.encode(image.id) .. "-cropped-" .. crop_hash .. ".png"
         cropped_image:write(tmp_path)
         cropped_image:destroy()
 

@@ -1,3 +1,4 @@
+local base64 = require("base64")
 local codes = require("image/backends/kitty/codes")
 local utils = require("image/utils")
 
@@ -81,7 +82,7 @@ local write_graphics = function(config, data)
       local file = io.open(data, "rb")
       data = file:read("*all")
     end
-    data = utils.base64.encode(data):gsub("%-", "/")
+    data = base64.encode(data):gsub("%-", "/")
     local chunks = get_chunked(data)
     local m = #chunks > 1 and 1 or 0
     control_payload = control_payload .. ",m=" .. m

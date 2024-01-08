@@ -1,3 +1,4 @@
+local base64 = require('base64')
 local magick = require("image/magick")
 local renderer = require("image/renderer")
 local utils = require("image/utils")
@@ -156,7 +157,7 @@ function Image:brightness(brightness)
   local magick_image = magick.load_image(self.path)
   if not magick_image then error(("image.nvim: magick failed to load image: %s"):format(self.path)) end
   magick_image:modulate(brightness)
-  local altered_path = self.global_state.tmp_dir .. "/" .. utils.base64.encode(self.id) .. "-source.png"
+  local altered_path = self.global_state.tmp_dir .. "/" .. base64.encode(self.id) .. "-source.png"
   magick_image:write(altered_path)
   magick_image:destroy()
 
@@ -176,7 +177,7 @@ function Image:saturation(saturation)
   local magick_image = magick.load_image(self.path)
   if not magick_image then error(("image.nvim: magick failed to load image: %s"):format(self.path)) end
   magick_image:modulate(nil, saturation)
-  local altered_path = self.global_state.tmp_dir .. "/" .. utils.base64.encode(self.id) .. "-source.png"
+  local altered_path = self.global_state.tmp_dir .. "/" .. base64.encode(self.id) .. "-source.png"
   magick_image:write(altered_path)
   magick_image:destroy()
 
@@ -196,7 +197,7 @@ function Image:hue(hue)
   local magick_image = magick.load_image(self.path)
   if not magick_image then error(("image.nvim: magick failed to load image: %s"):format(self.path)) end
   magick_image:modulate(nil, nil, hue)
-  local altered_path = self.global_state.tmp_dir .. "/" .. utils.base64.encode(self.id) .. "-source.png"
+  local altered_path = self.global_state.tmp_dir .. "/" .. base64.encode(self.id) .. "-source.png"
   magick_image:write(altered_path)
   magick_image:destroy()
 
@@ -263,7 +264,7 @@ local from_file = function(path, options, state)
         resize_hash = nil,
         namespace = opts.namespace or nil,
       }, state)
-      -- utils.debug(("image.nvim: cloned image %s from %s"):format(clone.id, instance.id))
+      utils.debug(("image.nvim: cloned image %s from %s"):format(clone.id, instance.id))
       return clone
     end
   end
@@ -272,7 +273,7 @@ local from_file = function(path, options, state)
 
   -- convert non-png images to png and read the dimensions
   local source_path = absolute_path
-  local converted_path = state.tmp_dir .. "/" .. utils.base64.encode(id) .. "-source.png"
+  local converted_path = state.tmp_dir .. "/" .. base64.encode(id) .. "-source.png"
   local magick_image = nil
 
   -- case 1: non-png, already converted
@@ -339,7 +340,7 @@ local from_url = function(url, options, callback, state)
     return
   end
 
-  local tmp_path = state.tmp_dir .. "/" .. utils.base64.encode(url) .. ".png"
+  local tmp_path = state.tmp_dir .. "/" .. base64.encode(url) .. ".png"
   local stdout = vim.loop.new_pipe()
 
   vim.loop.spawn("curl", {
@@ -368,7 +369,28 @@ local from_url = function(url, options, callback, state)
   end)
 end
 
+---@param data base64 encoded string
+---@param options? ImageOptions
+---@param state State
+local from_data = function(data, options, state)
+  local id = utils.random.id()
+  local tmp_path = state.tmp_dir .. "/" .. 'data-' .. id .. ".png"
+	if vim.fn.filereadable(tmp_path) == 0 then
+		local tmp_file = io.open(tmp_path, 'wb')
+		if not tmp_file then
+			error("Couldn't open file for writing " .. tmp_path)
+		end
+		tmp_file:write(base64.decode(data))
+		io.close(tmp_file)
+	else
+		error("Shouldn't be possible")
+	end
+	instance = from_file(tmp_path, options, state)
+	return instance
+end
+
 return {
   from_file = from_file,
   from_url = from_url,
+	from_data = from_data,
 }
